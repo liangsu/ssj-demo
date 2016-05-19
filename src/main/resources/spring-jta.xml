@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd">
+
+	<!-- jpa通用配置 开始 -->
+	<bean id="persistenceProvider" class="org.hibernate.ejb.HibernatePersistence"/>
+	
+	<bean id="jpaVendorAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+		<property name="generateDdl" value="false" />
+		<property name="showSql" value="false" />
+		<property name="database" value="HSQL"/>
+	</bean>
+	
+	<bean id="jpaDialect" class="org.springframework.orm.jpa.vendor.HibernateJpaDialect"/>
+	
+	<util:map id="jpaPropertyMap">
+		<entry key="dialect" value="org.hibernate.dialect.MySQL5Dialect"/>
+		<entry key="hibernate.ejb.naming_strategy" value="org.hibernate.cfg.ImprovedNamingStrategy"/>
+		<entry key="hibernate.hbm2ddl.auto" value="validate"/>
+		<entry key="hibernate.cache.use_second_level_cache" value="false"/>
+		<entry key="hibernate.cache.use_query_cache" value="false"/>
+		<entry key="hibernate.generate_statistics" value="false"/>
+		<entry key="show_sql" value="true"/>
+		<entry key="format_sql" value="true"/>
+	</util:map>
+
+	<!-- atomikos事务管理器 -->
+	<bean id="atomikosTransactionManager" class="com.atomikos.icatch.jta.UserTransactionManager" init-method="init" destroy-method="close">  
+        <property name="forceShutdown">  
+            <value>true</value>  
+        </property>  
+    </bean>  
+    
+    <bean id="atomikosUserTransaction" class="com.atomikos.icatch.jta.UserTransactionImp">  
+        <property name="transactionTimeout" value="300" />  
+    </bean> 
+    
+    <!-- spring 事务管理器 -->  
+    <bean id="jtaTransactionManager" class="org.springframework.transaction.jta.JtaTransactionManager">  
+        <property name="transactionManager" ref="atomikosTransactionManager"/>  
+        <property name="userTransaction" ref="atomikosUserTransaction" />  
+        <property name="allowCustomIsolationLevels" value="true"/>   
+    </bean>
+    
+    <!-- 使用注解方式定义事务 -->  
+    <tx:annotation-driven transaction-manager="jtaTransactionManager" />  
+  
+    <!-- 使用AspectJ方式配置AOP -->  
+    <aop:aspectj-autoproxy proxy-target-class="true" />   
+    
+</beans>
