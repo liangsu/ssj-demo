@@ -16,17 +16,29 @@ public class EmfTeacherDao {
 	@Resource(name="entityManagerFactory1")
 	private EntityManagerFactory emf;
 	
-	@PersistenceContext
-	protected EntityManager em;
+//	@PersistenceContext
+//	private EntityManager em;
 	
 	public Teacher get(int id){
+		//Teacher t = em.find(Teacher.class, 1);
+		System.out.println("emf:"+emf);
+		EntityManager em = emf.createEntityManager();
+		System.out.println("em:"+em);
 		Teacher t = em.find(Teacher.class, 1);
+		
 		return t;
 	}
 	
-	@Transactional
+	@Transactional(transactionManager="jtaTransactionManager")
 	public void update(Teacher t){
+//		em.merge(t);
+		EntityManager em = emf.createEntityManager();
+		//em.getTransaction().begin();
+		
 		em.merge(t);
+		//em.getTransaction().commit();
+		
 		System.out.println("方法中:"+t.getName());
 	}
+	
 }

@@ -25,7 +25,8 @@
 	<bean id="jpaVendorAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
 		<property name="generateDdl" value="false" />
 		<property name="showSql" value="false" />
-		<property name="database" value="HSQL"/>
+		<property name="database" value="MYSQL"/>
+		<property name="databasePlatform" value="org.hibernate.dialect.MySQL5InnoDBDialect" />
 	</bean>
 	
 	<bean id="jpaDialect" class="org.springframework.orm.jpa.vendor.HibernateJpaDialect"/>
@@ -39,6 +40,11 @@
 		<entry key="hibernate.generate_statistics" value="false"/>
 		<entry key="show_sql" value="true"/>
 		<entry key="format_sql" value="true"/>
+		
+		<entry key="hibernate.connection.driver_class" value="com.mysql.jdbc.jdbc2.optional.MysqlXADataSource"/>
+		<entry key="hibernate.current_session_context_class" value="jta"/>
+		<entry key="hibernate.transaction.manager_lookup_class" value="com.atomikos.icatch.jta.hibernate3.TransactionManagerLookup"/>
+		
 	</util:map>
 
 	<!-- atomikos事务管理器 -->
@@ -59,8 +65,13 @@
         <property name="allowCustomIsolationLevels" value="true"/>   
     </bean>
     
+    <bean id="atomikosJtaPlatform" class="com.ls.ssj.base.AtomikosJtaPlatform">
+	    <property name="transactionManager" ref="atomikosTransactionManager" />
+	    <property name="userTransaction" ref="atomikosUserTransaction" />
+	  </bean>
+    
     <!-- 使用注解方式定义事务 -->  
-    <tx:annotation-driven transaction-manager="jtaTransactionManager" />  
+    <tx:annotation-driven transaction-manager="jtaTransactionManager"  />
   
     <!-- 使用AspectJ方式配置AOP -->  
     <aop:aspectj-autoproxy proxy-target-class="true" />   
